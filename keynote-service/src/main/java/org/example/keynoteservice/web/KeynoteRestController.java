@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/keynotes")
+@RequestMapping("/api/keynotes")
 public class KeynoteRestController {
     private final KeynoteService keynoteService;
     private final PagedResponseMapper pagedResponseMapper;

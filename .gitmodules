@@ -1,0 +1,3 @@
+[submodule "angular-client-app"]
+	path = angular-client-app
+	url = https://github.com/HakimMohammed/keynote-conference-client

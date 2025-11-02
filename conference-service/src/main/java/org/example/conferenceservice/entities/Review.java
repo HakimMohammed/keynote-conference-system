@@ -1,5 +1,6 @@
 package org.example.conferenceservice.entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.web.service.annotation.GetExchange;
@@ -20,5 +21,6 @@ public class Review {
     private String text;
     private Number score;
     @ManyToOne
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Conference conference;
 }
