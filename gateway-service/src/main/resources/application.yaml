@@ -1,16 +1,7 @@
-spring:
-  cloud:
-    gateway:
-      server:
-        webflux:
-          globalcors:
-            cors-configurations:
-              '[/**]':
-                allowedOrigins: "*"
-                allowedMethods:
-                  - GET
-                  - POST
-                  - PUT
-                  - DELETE
-                  - OPTIONS
-                allowedHeaders: "*"
+springdoc:
+  swagger-ui:
+    urls:
+      - name: Conference Service
+        url: conference-service/v3/api-docs
+      - name: Keynote Service
+        url: keynote-service/v3/api-docs
