@@ -1,0 +1,109 @@
+services:
+  # ===================== CONFIG SERVICE =====================
+  config-service:
+    build: ./configuration-service
+    container_name: config-service
+    networks:
+      - micro-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  # ===================== DISCOVERY SERVICE =====================
+  discovery-service:
+    build: ./discovery-service
+    container_name: discovery-service
+    depends_on:
+      - config-service
+    networks:
+      - micro-net
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-service:9999
+
+#  # ===================== KEYCLOAK =====================
+#  # Expose this one for login & admin console
+#  keycloak:
+#    image: quay.io/keycloak/keycloak:24.0
+#    container_name: keycloak
+#    environment:
+#      - KEYCLOAK_ADMIN=admin
+#      - KEYCLOAK_ADMIN_PASSWORD=admin
+#      - KC_DB=postgres
+#      - KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak
+#      - KC_DB_USERNAME=keycloak
+#      - KC_DB_PASSWORD=keycloak
+#    command:
+#      - start-dev
+#    ports:
+#      - "8080:8080"  # expose Keycloak only
+#    networks:
+#      - micro-net
+#    depends_on:
+#      - postgres
+
+  # ===================== POSTGRES (optional) =====================
+#  postgres:
+#    image: postgres:16
+#    container_name: postgres
+#    environment:
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: postgres
+#      POSTGRES_DB: keynote
+#    networks:
+#      - micro-net
+
+  # ===================== KEYNOTE SERVICE =====================
+  keynote-service:
+    build: ./keynote-service
+    container_name: keynote-service
+    depends_on:
+      - discovery-service
+      - config-service
+    networks:
+      - micro-net
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-service:9999
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+
+  # ===================== CONFERENCE SERVICE =====================
+  conference-service:
+    build: ./conference-service
+    container_name: conference-service
+    depends_on:
+      - discovery-service
+      - config-service
+    networks:
+      - micro-net
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-service:9999
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+
+  # ===================== GATEWAY SERVICE =====================
+  gateway-service:
+    build: ./gateway-service
+    container_name: gateway-service
+    depends_on:
+      - keynote-service
+      - conference-service
+      - discovery-service
+    ports:
+      - "8888:8888" # only public API entrypoint
+    networks:
+      - micro-net
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-service:8888
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+
+  # ===================== ANGULAR CLIENT =====================
+  client:
+    build: ./client
+    container_name: angular-client
+    depends_on:
+      - gateway-service
+    ports:
+      - "4200:80" # only frontend exposed
+    networks:
+      - micro-net
+
+networks:
+  micro-net:
+    driver: bridge
